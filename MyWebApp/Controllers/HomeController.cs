@@ -1,13 +1,22 @@
 ﻿using MyWebApp.Models;
-using System.Web.Mvc;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace MyWebApp.Controllers
 {
     public class HomeController : Controller
     {
+        private readonly IDistributedCache cache;
+
+        public HomeController(IDistributedCache cache)
+        {
+            this.cache = cache;
+        }
+
         public ActionResult Index()
         {
-            ViewBag.Message = Session["message"]?.ToString() ?? "";
+            ViewBag.Message = cache.GetString("message");
             return View();
         }
 
@@ -16,7 +25,7 @@ namespace MyWebApp.Controllers
         {
             if (!string.IsNullOrWhiteSpace(item?.Message))
             {
-                Session["message"] = item.Message;
+                cache.SetString("message", item.Message);
             }
             return RedirectToAction("Index");
         }
